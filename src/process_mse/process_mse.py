@@ -3,7 +3,7 @@ import jsonref
 import warnings
 
 
-def process_mse(cohort, version, window=None, columns=None, mapping=None, dbname=None):
+def process_mse(cohort, version, window=None, columns=None, mapping=None, reference_col = 'index_date', dbname=None):
     """
     process mse data of patients
     This function returns the mse data of specified patients.
@@ -15,6 +15,7 @@ def process_mse(cohort, version, window=None, columns=None, mapping=None, dbname
     version : CDM version
     window : window period to filter MSE data
         time window specified as a list [left cut-off , right cut-off] in days from the index date
+        if None, the function will return data for all SAV measurements
     columns : `str, array-like of str`, *optional*
         SAVs of interest specified as str or array-like collection
         of str.
@@ -38,8 +39,8 @@ def process_mse(cohort, version, window=None, columns=None, mapping=None, dbname
     sav_mappings = ['Suicidal:"normal, no issues, not present"', 'Suicidal:"neutral, unable to categorize"', 'Suicidal:suicidal ideation']
     sav_columns = ["sav_221_suicidal_0","sav_222_suicidal_1","sav_223_suicidal_2"]                        
     
-    df = process_mse(cohort, version, window, mapping = sav_mappings)
-    df = process_mse(cohort, version, window, columns = sav_columns)
+    df = process_mse(cohort[["person_id","index_date"]], version, window=time_period, mapping = sav_mappings)
+    df = process_mse(cohort[["person_id","index_date"]], version, window=time_period, columns = sav_columns)
 
     """
     
@@ -48,7 +49,7 @@ def process_mse(cohort, version, window=None, columns=None, mapping=None, dbname
             raise ValueError("mapping contain no values")
         if columns is not None:
             raise ValueError("two types of mapping files given, please use only one")
-        mapping_dictionary = jsonref.load(open('/Users/chanminmin/Desktop/function_project/mapping_dictionary.json'))
+        mapping_dictionary = jsonref.load(open('../config/sav_mapping_dictionary.json'))
         for mapping_name in mapping:
             if mapping_name not in list(mapping_dictionary.keys()):
                 raise ValueError("mapping contains invalid SAV category:subcategory names")
@@ -63,10 +64,10 @@ def process_mse(cohort, version, window=None, columns=None, mapping=None, dbname
         if df['person_id'].nunique() != cohort['person_id'].nunique():
             warnings.warn("some person_ids has no sav labels")
 
-    if window is None:
-        raise TypeError("window period has to be specified")
-    else:
-        df = df[(df['measurement_date'] - df['index_date']).dt.days >= window[0]]
-        df = df[(df['measurement_date'] - df['index_date']).dt.days <= window[1]]
+    if window is not None:
+        if len(window)!=2:
+            raise TypeError("more than 2 args for time window")
+        df = df[(df['measurement_date'] - df[reference_col]).dt.days >= window[0]]
+        df = df[(df['measurement_date'] - df[reference_col]).dt.days <= window[1]]
     
     return df
