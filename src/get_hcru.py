@@ -13,21 +13,22 @@ def calculate_HCRU(cohort, version, visit_mapping=None, failed_encounter=True):
     
     Parameters
     ----------
-    patients: pandas DataFrame containing ``person_id``, ``start_date``, ``end_date``, ``cohort_id``
+    cohort: pandas DataFrame containing ``person_id``, ``start_date``, ``end_date``, ``cohort_id``
         Cohort with time period to calculate HCRU 
-        HCRU is calculated in the time period of [start_date, end_date].
+        HCRU is calculated in the time period of [start_date, end_date]
     version: `string`
         The version of the schema as defined in OMOP CDM
     visit_mapping: `dict`
-        Mapping of HCRU variables of interest to specific visit types as key-value pairs. 
+        Mapping of HCRU variables of interest to define visit types as key-value pairs. 
         By default 1-1 mapping is used for OP, IP, ED.
+        To get the full list of values available, please use nb.get_unique_values('visit type').
     failed_encounter: `bool`
         If False, filters out visits that are 'failed encounters'. By default True.
     Returns
     -------
     pandas.DataFrame
-        Returns a data frame containing the ``person_id`` and number of visits in the period specified
-        The new columns are lablled by {key} for each key in visit_mapping.
+        Returns a data frame containing the ``person_id`` and number of each visit type in the period specified
+        The new columns are labelled by {key} for each key in visit_mapping.
     
     Raises
     ------
@@ -69,6 +70,6 @@ def calculate_HCRU(cohort, version, visit_mapping=None, failed_encounter=True):
     for i in visit_mapping.keys():
         cohort['check_validity'] = (cohort[i] > cohort['period_duration'])
         if True in list(cohort['check_validity'].unique()):
-            warnings.warn(f"Number of {i} visit calculated for the period  exceeds the number of days in the period")
+            warnings.warn(f"Number of {i} visit calculated for the period exceeds the number of days in the period")
         
     return cohort
