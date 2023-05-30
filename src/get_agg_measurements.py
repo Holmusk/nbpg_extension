@@ -32,7 +32,7 @@ def get_aggregated_measurement(scale, version, patients=None, cohort=None, faile
         ``mode_median``: aggregate using mode first, then median if multiple modes
     change : 'boolean'
         If True, scale measurements will be aggregated per person_id per measurement day using the selected agg method.
-        Outputs the change in measurements from the previous available measurement and the number of days between the change. 
+        Outputs the change in measurements from the previous available measurement and the number of days between the change.
         
     Returns
     -------
@@ -107,7 +107,7 @@ def get_aggregated_measurement(scale, version, patients=None, cohort=None, faile
     # then median, mean, min or max if multiple modes
     if agg == 'mode_median': 
         agg_df = df_groupby_mode.median()
-    if agg == 'mode_median': 
+    if agg == 'mode_mean': 
          agg_df = df_groupby_mode.mean()
     if agg == 'mode_min': 
         agg_df = df_groupby_mode.min()
